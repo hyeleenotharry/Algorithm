@@ -1,0 +1,363 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+  GDB online is an online compiler and debugger tool for C, C++, Python, PHP, Ruby, 
+  C#, OCaml, VB, Perl, Swift, Prolog, Javascript, Pascal, COBOL, HTML, CSS, JS
+  Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <stdio.h>
+#include <stdlib.h>
+
+typedef struct TreeNode
+{
+    int key;
+    char color;
+    struct TreeNode *left, *right, *parent;
+}TreeNode;
+
+typedef struct
+{
+    TreeNode *root;
+}TreeType;
+
+TreeNode *Nil;
+
+void init(TreeType *T)
+{
+    Nil = (TreeNode *)malloc(sizeof(TreeNode));
+    Nil->color = 'B';
+    T->root = Nil;
+}
+
+TreeNode* createNode(int key)
+{
+    TreeNode* node = (TreeNode *)malloc(sizeof(TreeNode));
+    node->key = key;
+    node->left = node->right = node->parent = Nil;
+    node->color = 'R';
+    return node;
+}
+
+void leftRotate(TreeType *T, TreeNode *x)
+{
+    TreeNode *y = x->right;
+    x->right = y->left;
+    
+    if(y->left != Nil)
+        y->left->parent = x;
+    
+    y->parent = x->parent;
+    
+    if(x->parent == Nil)
+        T->root = y;
+    else if(x == x->parent->left)
+        x->parent->left = y;
+    else
+        x->parent->right = y;
+        
+    y->left = x;    
+    x->parent = y;    
+}
+
+void rightRotate(TreeType *T, TreeNode *x)
+{
+    TreeNode *y = x->left;
+    x->left = y->right;
+    
+    if(y->right != Nil)
+        y->right->parent = x;
+    
+    y->parent = x->parent;
+    
+    if(x->parent == Nil)
+        T->root = y;
+    else if(x == x->parent->right)
+        x->parent->right = y;
+    else
+        x->parent->left = y;
+        
+    y->right = x;    
+    x->parent = y;    
+}
+
+void insertFixup(TreeType *T, TreeNode *z)
+{
+    TreeNode *y;
+    
+    while(z->parent->color == 'R')
+    {
+        if (z->parent == z->parent->parent->left)
+        {
+            y = z->parent->parent->right;
+            if(y->color == 'R')
+            {
+                z->parent->color = 'B';
+                y->color = 'B';
+                z->parent->parent->color = 'R';
+                z = z->parent->parent;
+            }
+            else
+            {
+                if(z == z->parent->right)
+                {
+                    z = z->parent;
+                    leftRotate(T, z);
+                }
+                z->parent->color = 'B';
+                z->parent->parent->color = 'R';
+                rightRotate(T, z->parent->parent);
+            }
+        }
+        else
+        {
+            y = z->parent->parent->left;
+            if(y->color == 'R')
+            {
+                z->parent->color = 'B';
+                y->color = 'B';
+                z->parent->parent->color = 'R';
+                z = z->parent->parent;
+            }
+            else
+            {
+                if(z == z->parent->left)
+                {
+                    z = z->parent;
+                    rightRotate(T, z);
+                }
+                z->parent->color = 'B';
+                z->parent->parent->color = 'R';
+                leftRotate(T, z->parent->parent);
+            }
+        }
+    }
+    
+    T->root->color = 'B';
+}
+
+TreeNode* newNode(int key){
+    TreeNode *z = createNode(key);
+    return z;
+}
+
+void insert(TreeType* T, TreeNode* z)
+{
+    TreeNode *y = Nil;
+    TreeNode *x = T->root;
+    
+    
+    while(x != Nil)
+    {
+        y = x;
+        if(z->key < x->key)
+            x = x->left;
+        else
+            x = x->right;
+    }
+    
+    z->parent = y;
+    
+    if (y == Nil)
+    {
+        T->root = z;
+        T->root->color = 'B';
+    }
+    else if(z->key < y->key)
+        y->left = z;
+    else
+        y->right = z;
+        
+    insertFixup(T, z);    
+}
+
+TreeNode* Transplant(TreeType* T, TreeNode* u, TreeNode* v){
+    //printf("Transplant start\n");
+    if(u->parent == Nil){
+        T->root = v;
+    }else if (u == u->parent->left){
+        u->parent->left = v;
+    }else{
+        u->parent->right = v;
+    }
+    v->parent = u->parent;
+    //printf("transplant finish\n");
+}
+
+TreeNode* TreeMin(TreeNode* x){
+    while(x->left != Nil){
+        x=x->left;
+    }
+    return x;
+}
+
+void deleteFixup(TreeType* T, TreeNode* x){
+    TreeNode* w;
+    
+    while((x != T->root) && (x->color == 'B')){
+        if(x == x->parent->left){
+            w = x->parent->right;
+            
+            if(w->color == 'R'){
+                printf("case1 \n");
+                w->color = 'B';
+                x->parent->color = 'R';
+                leftRotate(T, x->parent);
+                w = x->parent->right;
+                
+            }
+            if(w->left->color == 'B' && w->right->color == 'B'){
+                printf("case2 \n");
+                w->color='R';
+                x = x->parent;
+                
+            }else if(w->right->color == 'B'){
+                printf("case3 \n");
+                w->left->color = 'B';
+                w->color = 'R';
+                rightRotate(T, w);
+                w = x->parent->right;
+                
+            }
+            printf("case4 \n");
+            w->color = x->parent->color;
+            x->parent->color = 'B';
+            w->right->color = 'B';
+            leftRotate(T, x->parent);
+            x = T->root;
+            
+            
+        }
+        else{
+            w = x->parent->left;
+            if(w->color == 'R'){
+                printf("case1 \n");
+                w->color = 'B';
+                x->parent->color = 'R';
+                rightRotate(T, x->parent);
+                w = x->parent->left;
+                
+            }
+            if(w->right->color == 'B' && w->left->color == 'B'){
+                printf("case2 \n");
+                w->color='R';
+                x = x->parent;
+            }
+            else if(w->left->color == 'B'){
+                printf("case3 \n");
+                w->right->color = 'B';
+                w->color = 'R';
+                leftRotate(T, w);
+                w = x->parent->left;
+                
+            }
+            printf("case4 \n");
+            w->color = x->parent->color;
+            x->parent->color = 'B';
+            w->left->color = 'B';
+            rightRotate(T, x->parent);
+            x = T->root;
+        }
+        x->color = 'B';
+    }
+    
+}
+
+void delete(TreeType *T, TreeNode* z){
+    TreeNode* y = z;
+    char Ycolor = y->color;
+    TreeNode* x = T->root;
+    if(z->left == Nil){
+        x = z->right;
+        Transplant(T, z, z->right);
+        
+    }else if(z->right == Nil){
+        x = z->left;
+        Transplant(T, z, z->left);
+        
+    }
+    else{
+        y = TreeMin(z->right);
+        
+        Ycolor = y->color;
+        x = y->right;
+        if(y->parent == z){
+            x->parent = y;
+            
+        }
+        else{
+            Transplant(T, y, y->right);
+            y->right = z->right;
+            y->right->parent = y;
+        }
+        Transplant(T,z,y);
+        y->left = z->left;
+        y->left->parent = y;
+        y->color = z->color;
+        
+    }
+    
+    if(Ycolor == 'B'){
+    
+        deleteFixup(T, x);
+    }
+    
+}
+
+void preOrder(TreeNode* root)
+{
+    if(root != Nil)
+    {
+        printf("[%d(%c)] ", root->key, root->color);
+        preOrder(root->left);
+        preOrder(root->right);
+    }
+}
+
+int main()
+{
+    TreeType T;
+    init(&T);
+    
+    TreeNode* a = newNode(12);
+    TreeNode* b = newNode(5);
+    TreeNode* c = newNode(15);
+    TreeNode* d = newNode(3);
+    TreeNode* e = newNode(10);
+    TreeNode* f = newNode(17);
+    TreeNode* g = newNode(13);
+    TreeNode* h = newNode(4);
+    TreeNode* i = newNode(7);
+    TreeNode* j = newNode(11);
+    TreeNode* k = newNode(14);
+    TreeNode* l = newNode(6);
+    TreeNode* m = newNode(8);
+    
+    
+    
+    
+    insert(&T, a); 
+    insert(&T, b); 
+    insert(&T, c);
+    insert(&T, d); 
+    insert(&T, e); 
+    insert(&T, f); 
+    insert(&T, g); 
+    insert(&T, h); 
+    insert(&T, i);
+    insert(&T, j);
+    insert(&T, k);
+    insert(&T, l);
+    insert(&T, m);
+    
+    preOrder(T.root); printf("\n");
+    
+    delete(&T, i); preOrder(T.root); printf("\n");
+    
+    
+    return 0;   
+}
+
+
+
+
