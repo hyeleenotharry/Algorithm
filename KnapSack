@@ -1,0 +1,61 @@
+/******************************************************************************
+
+Welcome to GDB Online.
+GDB online is an online compiler and debugger tool for C, C++, Python, Java, PHP, Ruby, Perl,
+C#, OCaml, VB, Swift, Pascal, Fortran, Haskell, Objective-C, Assembly, HTML, CSS, JS, SQLite, Prolog.
+Code, Compile, Run and Debug online from anywhere in world.
+
+*******************************************************************************/
+#include <stdio.h>
+#define max(a,b)  (((a) > (b)) ? (a) : (b))
+
+int printArr(int n, int m, int Arr[][m]){
+    for(int i = 0; i < n; i++){
+        for(int j = 0; j < m; j++){
+            printf("[%d] ", Arr[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+void knapSack(int W[], int V[], int n, int w){
+    
+    int grid[n][w];
+    
+    
+    for(int i = 0; i < n; i++){
+        grid[i][0] = 0;
+    }
+    for(int j = 0; j < w; j++){
+        grid[0][j] = 0;
+    }
+    //printArr(n, w, grid);
+    //printf("\n");
+    
+    for(int i = 1; i < n; i++){
+        for(int j = 1; j < w; j++){
+            if(W[i-1] <= j){
+                int x = j - W[i-1];
+                grid[i][j] = max(grid[i-1][j], V[i-1] + grid[i-1][x]); //problem
+                //printf("%d \n", x);
+            }
+            else
+                grid[i][j] = grid[i-1][j];
+            
+        }
+    }
+    printArr(n, w, grid);
+}
+
+int main()
+{
+    int n = 4;
+    int w = 5;
+    int W[4] = {1, 4, 3, 0};
+    int V[4] = {15, 30, 20, 0};
+    knapSack(W,V, n, w);
+    
+    return 0;
+}
+
+
